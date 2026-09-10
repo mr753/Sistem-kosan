@@ -22,31 +22,37 @@ export default function RegisterPage() {
     setError(null);
     setInfo(null);
     setLoading(true);
-    const form = new FormData(e.currentTarget);
-    const supabase = createClient();
 
-    const { data, error } = await supabase.auth.signUp({
-      email: String(form.get("email")),
-      password: String(form.get("password")),
-      options: {
-        data: {
-          full_name: String(form.get("full_name")),
-          phone: String(form.get("phone")),
-          role
+    try {
+      const form = new FormData(e.currentTarget);
+      const supabase = createClient();
+
+      const { data, error: signUpError } = await supabase.auth.signUp({
+        email: String(form.get("email")),
+        password: String(form.get("password")),
+        options: {
+          data: {
+            full_name: String(form.get("full_name")),
+            phone: String(form.get("phone")),
+            role
+          }
         }
-      }
-    });
+      });
 
-    if (error) {
-      setError(error.message);
-      setLoading(false);
-      return;
-    }
-    if (data.session) {
-      router.push(role === "tenant" ? "/portal" : "/dashboard");
-      router.refresh();
-    } else {
-      setInfo("Pendaftaran berhasil. Cek email Anda untuk konfirmasi, lalu masuk.");
+      if (signUpError) throw signUpError;
+
+      if (data.session) {
+        // Jika auto-confirm aktif atau user langsung login
+        router.push(role === "tenant" ? "/portal" : "/dashboard");
+        router.refresh();
+      } else {
+        // Jika perlu konfirmasi email
+        setInfo("Pendaftaran berhasil! Silakan cek email Anda untuk verifikasi, lalu masuk.");
+      }
+    } catch (err: any) {
+      console.error("Registration error:", err);
+      setError(err.message || "Terjadi kesalahan saat mendaftar. Silakan coba lagi.");
+    } finally {
       setLoading(false);
     }
   }
