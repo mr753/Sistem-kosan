@@ -143,6 +143,12 @@ export async function getDashboardData(
       .gte("txn_date", financeFrom)
   ]);
 
+  if (roomsRes.error) console.error("Error fetching rooms:", roomsRes.error);
+  if (contractsRes.error) console.error("Error fetching contracts:", contractsRes.error);
+  if (invoicesRes.error) console.error("Error fetching invoices:", invoicesRes.error);
+  if (ticketsRes.error) console.error("Error fetching tickets:", ticketsRes.error);
+  if (txRes.error) console.error("Error fetching transactions:", txRes.error);
+
   const rooms = (roomsRes.data ?? []) as Array<{ status: string }>;
   const contracts = (contractsRes.data ?? []) as unknown as ContractRow[];
   const invoices = (invoicesRes.data ?? []) as unknown as InvoiceRow[];

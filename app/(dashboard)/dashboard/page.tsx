@@ -15,12 +15,16 @@ export default async function DashboardPage() {
   const ownerFilter =
     profile.role === "super_admin" ? {} : { owner_id: profile.id };
 
-  const { data: properties } = await supabase
+  const { data: properties, error: propertiesError } = await supabase
     .from("properties")
     .select("id,name")
     .match(ownerFilter)
     .eq("is_active", true)
     .order("created_at", { ascending: true });
+
+  if (propertiesError) {
+    console.error("Error fetching properties:", propertiesError);
+  }
 
   const propertyIds = (properties ?? []).map((p) => p.id);
   const data = await getDashboardData(supabase, propertyIds);
