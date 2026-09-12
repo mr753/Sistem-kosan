@@ -36,19 +36,23 @@ export default function LoginPage() {
     setError(null);
     setLoading(true);
     const form = new FormData(e.currentTarget);
-    const supabase = createClient();
+    const email = String(form.get("email"));
+    const password = String(form.get("password"));
 
+    const supabase = createClient();
     const { error } = await supabase.auth.signInWithPassword({
-      email: String(form.get("email")),
-      password: String(form.get("password"))
+      email,
+      password
     });
 
     if (error) {
-      setError("Email atau kata sandi salah. Silakan coba lagi.");
+      setError("Email atau kata sandi salah. Silakan periksa kembali.");
       setLoading(false);
       return;
     }
-    router.push(await homeForRole());
+
+    // Refresh route agar middleware mendeteksi sesi baru
+    router.push("/dashboard");
     router.refresh();
   }
 

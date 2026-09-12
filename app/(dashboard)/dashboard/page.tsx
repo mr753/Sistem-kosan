@@ -11,18 +11,33 @@ export default async function DashboardPage() {
   const { profile } = await requireUser();
   const supabase = await createClient();
 
-  // Super admin melihat semua properti; landlord hanya properti miliknya.
   const ownerFilter =
     profile.role === "super_admin" ? {} : { owner_id: profile.id };
 
-  const { data: properties } = await supabase
+  const { data: properties, error: propertiesError } = await supabase
     .from("properties")
     .select("id,name")
     .match(ownerFilter)
     .eq("is_active", true)
     .order("created_at", { ascending: true });
 
-  const propertyIds = (properties ?? []).map((p) => p.id);
+  if (propertiesError) {
+    return (
+      <div className="p-4 bg-red-50 text-red-700 rounded-md">
+        <p>Gagal memuat properti: {propertiesError.message}</p>
+      </div>
+    );
+  }
+
+  if (!properties || properties.length === 0) {
+    return (
+      <div className="p-4 text-center text-muted-foreground">
+        <p>Belum ada properti yang aktif untuk akun Anda.</p>
+      </div>
+    );
+  }
+
+  const propertyIds = properties.map((p) => p.id);
   const data = await getDashboardData(supabase, propertyIds);
 
   const firstName = profile.full_name?.split(" ")[0] ?? "Pemilik";
