@@ -36,8 +36,13 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "SUPABASE_SERVICE_ROLE_KEY belum diisi" }, { status: 500 });
   }
 
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (!url) {
+    return NextResponse.json({ error: "NEXT_PUBLIC_SUPABASE_URL belum diisi" }, { status: 500 });
+  }
+
   const admin = createSupabaseClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    url,
     process.env.SUPABASE_SERVICE_ROLE_KEY
   );
 
