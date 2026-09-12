@@ -94,7 +94,7 @@ interface TicketRow {
 export async function getDashboardData(
   supabase: SupabaseClient,
   propertyIds: string[]
-): Promise<{ data: DashboardData | null; error: string | null }> {
+): Promise<DashboardData> {
   const empty = (): DashboardData => ({
     summary: {
       totalRooms: 0, occupiedRooms: 0, vacantRooms: 0, maintenanceRooms: 0,
@@ -104,7 +104,7 @@ export async function getDashboardData(
     alerts: []
   });
 
-  if (propertyIds.length === 0) return { data: empty(), error: null };
+  if (propertyIds.length === 0) return empty();
 
   const now = new Date();
   const today = now.toISOString().slice(0, 10);
@@ -142,12 +142,6 @@ export async function getDashboardData(
       .in("property_id", propertyIds)
       .gte("txn_date", financeFrom)
   ]);
-
-  if (roomsRes.error) return { data: null, error: `Error rooms: ${roomsRes.error.message}` };
-  if (contractsRes.error) return { data: null, error: `Error contracts: ${contractsRes.error.message}` };
-  if (invoicesRes.error) return { data: null, error: `Error invoices: ${invoicesRes.error.message}` };
-  if (ticketsRes.error) return { data: null, error: `Error tickets: ${ticketsRes.error.message}` };
-  if (txRes.error) return { data: null, error: `Error transactions: ${txRes.error.message}` };
 
   const rooms = (roomsRes.data ?? []) as Array<{ status: string }>;
   const contracts = (contractsRes.data ?? []) as unknown as ContractRow[];
@@ -218,20 +212,17 @@ export async function getDashboardData(
   alerts.sort((a, b) => sevRank[a.severity] - sevRank[b.severity]);
 
   return {
-    data: {
-      summary: {
-        totalRooms: rooms.length,
-        occupiedRooms,
-        vacantRooms,
-        maintenanceRooms,
-        activeTenants,
-        dueCountThisMonth: dueThisMonth.length,
-        dueAmountThisMonth: dueThisMonth.reduce((s, i) => s + Number(i.base_rent), 0),
-        overdueCount: overdue.length
-      },
-      finance,
-      alerts
+    summary: {
+      totalRooms: rooms.length,
+      occupiedRooms,
+      vacantRooms,
+      maintenanceRooms,
+      activeTenants,
+      dueCountThisMonth: dueThisMonth.length,
+      dueAmountThisMonth: dueThisMonth.reduce((s, i) => s + Number(i.base_rent), 0),
+      overdueCount: overdue.length
     },
-    error: null
+    finance,
+    alerts
   };
 }
