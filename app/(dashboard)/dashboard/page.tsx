@@ -1,9 +1,12 @@
+import Link from "next/link";
+import { Building2 } from "lucide-react";
 import { requireUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { getDashboardData } from "@/lib/queries/dashboard";
 import { SummaryCards } from "@/components/dashboard/summary-cards";
 import { RevenueChart } from "@/components/dashboard/revenue-chart";
 import { AlertsPanel } from "@/components/dashboard/alerts-panel";
+import { buttonVariants } from "@/components/ui/button";
 
 export const metadata = { title: "Dashboard" };
 
@@ -31,8 +34,17 @@ export default async function DashboardPage() {
 
   if (!properties || properties.length === 0) {
     return (
-      <div className="p-4 text-center text-muted-foreground">
-        <p>Belum ada properti yang aktif untuk akun Anda.</p>
+      <div className="flex min-h-[380px] flex-col items-center justify-center rounded-xl border border-dashed p-8 text-center animate-in fade-in-50">
+        <div className="flex size-14 items-center justify-center rounded-full bg-primary/10 text-primary">
+          <Building2 className="size-7" />
+        </div>
+        <h2 className="mt-4 text-lg font-semibold">Belum Ada Properti Aktif</h2>
+        <p className="mt-1.5 max-w-sm text-sm text-muted-foreground">
+          Tambahkan atau aktifkan gedung kos Anda terlebih dahulu untuk melihat rangkuman statistik dan laporan keuangan kos.
+        </p>
+        <Link href="/properties" className={buttonVariants({ className: "mt-5" })}>
+          + Kelola Properti
+        </Link>
       </div>
     );
   }

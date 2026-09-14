@@ -1,20 +1,11 @@
-import { DoorOpen } from "lucide-react";
-import { ModulePlaceholder } from "@/components/module-placeholder";
+import { getRooms } from "@/lib/actions/rooms";
+import { getProperties } from "@/lib/actions/properties";
+import { RoomsClient } from "./rooms-client";
 
 export const metadata = { title: "Kamar" };
 
-export default function RoomsPage() {
-  return (
-    <ModulePlaceholder
-      title="Kamar"
-      description="Inventaris kamar & papan status visual."
-      icon={DoorOpen}
-      planned={[
-        "CRUD kamar: tipe, fasilitas (AC, KM Dalam, dll.), harga harian/bulanan/tahunan",
-        "Papan status berwarna: Terisi (hijau), Kosong (biru), Pemeliharaan (kuning)",
-        "Filter per properti dan kata kunci",
-        "Skema lengkap: tabel rooms + kolom facilities[], status, price_*"
-      ]}
-    />
-  );
+export default async function RoomsPage() {
+  const [rooms, properties] = await Promise.all([getRooms(), getProperties()]);
+
+  return <RoomsClient initialRooms={rooms} properties={properties} />;
 }

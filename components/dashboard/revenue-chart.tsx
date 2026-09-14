@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import {
   Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis
 } from "recharts";
@@ -14,6 +15,23 @@ const TOOLTIP_STYLE = {
 };
 
 export function RevenueChart({ finance }: { finance: MonthlyFinance[] }) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+
+  if (!mounted) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Pendapatan vs Pengeluaran</CardTitle>
+          <CardDescription>6 bulan terakhir dari catatan transaksi (uang masuk vs keluar)</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="h-72 w-full animate-pulse bg-muted rounded" />
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card>
       <CardHeader>

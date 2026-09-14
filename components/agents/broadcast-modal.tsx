@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { AGENT_CHANNELS, COMMISSION_TYPES } from "@/lib/constants";
+import { AGENT_CHANNELS } from "@/lib/constants";
 import { formatIDR } from "@/lib/utils";
 import {
   buildAvailabilityMessage, emailAgentLink, whatsappAgentLink,

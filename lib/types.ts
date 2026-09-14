@@ -33,6 +33,13 @@ export interface Property {
   updated_at: string;
 }
 
+export interface PropertyWithStats extends Property {
+  total_rooms: number;
+  occupied_rooms: number;
+  vacant_rooms: number;
+  maintenance_rooms: number;
+}
+
 export interface Room {
   id: string;
   property_id: string;
