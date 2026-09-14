@@ -76,6 +76,7 @@ export async function GET(request: Request) {
   }
 
   const { data: contracts, error: cErr } = await contractQuery;
+  if (cErr) return NextResponse.json({ error: cErr.message }, { status: 500 });
 
   const contractsRows = (contracts ?? []) as ContractRow[];
   let created = 0;

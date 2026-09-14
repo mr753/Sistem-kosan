@@ -42,6 +42,15 @@ export async function createTicketAction(input: TicketInput): Promise<ActionResu
   const propertyId = contract?.property_id;
   if (!propertyId) return { ok: false, error: "Tidak ada kontrak aktif untuk melaporkan komplain." };
 
+  // Photo paths must be inside the user's own storage folder (<user_id>/...).
+  // Prevents using the service-role signed URL to access other users' files.
+  const photoPrefix = `${user.id}/`;
+  const photos = (input.photos ?? [])
+    .filter((p): p is string => typeof p === "string" && p.startsWith(photoPrefix));
+  if (photos.length !== (input.photos ?? []).length) {
+    return { ok: false, error: "Path foto tidak valid." };
+  }
+
   const { error } = await supabase.from("tickets").insert({
     tenant_id: tenant.id,
     property_id: propertyId,
@@ -49,7 +58,7 @@ export async function createTicketAction(input: TicketInput): Promise<ActionResu
     subject,
     description: input.description.trim().slice(0, 2000) || null,
     priority: input.priority,
-    photos: (input.photos ?? []).slice(0, 3)
+    photos: photos.slice(0, 3)
   });
   if (error) return { ok: false, error: error.message };
 
