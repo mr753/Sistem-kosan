@@ -5,7 +5,12 @@ import { createClient } from "@/lib/supabase/server";
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
-  const next = searchParams.get("next") ?? "/dashboard";
+  const requestedNext = searchParams.get("next");
+  // Hanya izinkan path internal. Nilai query ini dapat dikendalikan pengguna,
+  // jadi URL absolut atau protocol-relative tidak boleh dipakai sebagai redirect.
+  const next = requestedNext?.startsWith("/") && !requestedNext.startsWith("//")
+    ? requestedNext
+    : "/dashboard";
 
   if (code) {
     const supabase = await createClient();

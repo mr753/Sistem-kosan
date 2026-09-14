@@ -39,6 +39,13 @@ export default async function DashboardPage() {
 
   const propertyIds = properties.map((p) => p.id);
   const data = await getDashboardData(supabase, propertyIds);
+  if (data.error) {
+    return (
+      <div className="rounded-md bg-red-50 p-4 text-red-700">
+        <p>Gagal memuat dashboard: {data.error}</p>
+      </div>
+    );
+  }
 
   const firstName = profile.full_name?.split(" ")[0] ?? "Pemilik";
   const today = new Date().toLocaleDateString("id-ID", {

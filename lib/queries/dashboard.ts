@@ -42,6 +42,7 @@ export interface DashboardData {
   summary: DashboardSummary;
   finance: MonthlyFinance[];
   alerts: DashboardAlert[];
+  error: string | null;
 }
 
 const MONTHS = 6;
@@ -101,7 +102,8 @@ export async function getDashboardData(
       activeTenants: 0, dueCountThisMonth: 0, dueAmountThisMonth: 0, overdueCount: 0
     },
     finance: lastMonths(MONTHS).map((m) => ({ month: m.label, income: 0, expense: 0 })),
-    alerts: []
+    alerts: [],
+    error: null
   });
 
   if (propertyIds.length === 0) return empty();
@@ -144,6 +146,9 @@ export async function getDashboardData(
   ]);
 
   const rooms = (roomsRes.data ?? []) as Array<{ status: string }>;
+  const queryError = [roomsRes, contractsRes, invoicesRes, ticketsRes, txRes].find((result) => result.error)?.error;
+  if (queryError) return { ...empty(), error: queryError.message };
+
   const contracts = (contractsRes.data ?? []) as unknown as ContractRow[];
   const invoices = (invoicesRes.data ?? []) as unknown as InvoiceRow[];
   const tickets = (ticketsRes.data ?? []) as unknown as TicketRow[];
@@ -223,6 +228,7 @@ export async function getDashboardData(
       overdueCount: overdue.length
     },
     finance,
-    alerts
+    alerts,
+    error: null
   };
 }

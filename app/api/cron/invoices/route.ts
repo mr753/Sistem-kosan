@@ -72,7 +72,7 @@ export async function GET(request: Request) {
     .eq("billing_cycle", ALLOWED_CYCLE)
     .lte("start_date", periodEnd);
   if (existingContractIds.length > 0) {
-    contractQuery = contractQuery.not("id", "in", existingContractIds);
+    contractQuery = contractQuery.not("id", "in", `(${existingContractIds.join(",")})`);
   }
 
   const { data: contracts, error: cErr } = await contractQuery;

@@ -9,7 +9,9 @@ const TTL_SECONDS = 300; // 5 menit — cukup utk render gambar di halaman
 
 export async function signPath(bucket: string, path: string | null | undefined): Promise<string | null> {
   if (!path) return null;
-  const { data, error } = await createAdminClient().storage.from(bucket).createSignedUrl(path, TTL_SECONDS);
+  const admin = createAdminClient();
+  if (!admin) return null;
+  const { data, error } = await admin.storage.from(bucket).createSignedUrl(path, TTL_SECONDS);
   if (error || !data) return null;
   return data.signedUrl;
 }

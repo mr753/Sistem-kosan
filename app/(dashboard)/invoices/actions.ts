@@ -126,19 +126,22 @@ export async function approveInvoiceAction(invoiceId: string): Promise<ActionRes
 
   // Notifikasi ke penyewa (best-effort via admin)
   try {
-    const { data: ten } = await createAdminClient()
-      .from("tenants")
-      .select("user_id")
-      .eq("id", inv.tenant_id)
-      .single();
-    if (ten?.user_id) {
-      await createAdminClient().from("notifications").insert({
-        user_id: ten.user_id,
-        type: "payment_confirmed",
-        title: "Pembayaran dikonfirmasi",
-        body: `Tagihan ${inv.period_label} dinyatakan LUNAS oleh pengelola. Terima kasih!`,
-        link: "/portal/tagihan"
-      });
+    const admin = createAdminClient();
+    if (admin) {
+      const { data: ten } = await admin
+        .from("tenants")
+        .select("user_id")
+        .eq("id", inv.tenant_id)
+        .single();
+      if (ten?.user_id) {
+        await admin.from("notifications").insert({
+          user_id: ten.user_id,
+          type: "payment_confirmed",
+          title: "Pembayaran dikonfirmasi",
+          body: `Tagihan ${inv.period_label} dinyatakan LUNAS oleh pengelola. Terima kasih!`,
+          link: "/portal/tagihan"
+        });
+      }
     }
   } catch {
     // ignore

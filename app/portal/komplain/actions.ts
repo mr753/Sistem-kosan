@@ -55,24 +55,27 @@ export async function createTicketAction(input: TicketInput): Promise<ActionResu
 
   // Notifikasi ke pemilik properti (admin client, bukan RLS user)
   try {
-    const { data: prop } = await createAdminClient()
-      .from("properties")
-      .select("owner_id")
-      .eq("id", propertyId)
-      .single();
-    if (prop?.owner_id) {
-      const { data: ten } = await createAdminClient()
-        .from("tenants")
-        .select("full_name")
-        .eq("id", tenant.id)
+    const admin = createAdminClient();
+      if (admin) {
+      const { data: prop } = await admin
+        .from("properties")
+        .select("owner_id")
+        .eq("id", propertyId)
         .single();
-      await createAdminClient().from("notifications").insert({
-        user_id: prop.owner_id,
-        type: "new_ticket",
-        title: `Komplain baru dari ${ten?.full_name ?? "Penyewa"}`,
-        body: subject,
-        link: "/tickets"
+      if (prop?.owner_id) {
+        const { data: ten } = await admin
+          .from("tenants")
+          .select("full_name")
+          .eq("id", tenant.id)
+          .single();
+        await admin.from("notifications").insert({
+          user_id: prop.owner_id,
+          type: "new_ticket",
+          title: `Komplain baru dari ${ten?.full_name ?? "Penyewa"}`,
+          body: subject,
+          link: "/tickets"
       });
+    }
     }
   } catch {
     // notifikasi bersifat best-effort

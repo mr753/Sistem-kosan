@@ -53,20 +53,23 @@ export async function updateTicketStatusAction(ticketId: string, status: TicketS
 
   // Beri tahu penyewa (best-effort)
   try {
-    const { data: ten } = await createAdminClient()
-      .from("tenants")
-      .select("user_id")
-      .eq("id", ticket.tenant_id)
-      .single();
-    if (ten?.user_id) {
-      const labels: Record<TicketStatus, string> = { open: "Baru", in_progress: "Dikerjakan", resolved: "Selesai", closed: "Ditutup" };
-      await createAdminClient().from("notifications").insert({
-        user_id: ten.user_id,
-        type: "ticket_update",
-        title: "Status komplain diperbarui",
-        body: `${ticket.subject} → ${labels[status]}`,
-        link: "/portal/komplain"
-      });
+    const admin = createAdminClient();
+    if (admin) {
+      const { data: ten } = await admin
+        .from("tenants")
+        .select("user_id")
+        .eq("id", ticket.tenant_id)
+        .single();
+      if (ten?.user_id) {
+        const labels: Record<TicketStatus, string> = { open: "Baru", in_progress: "Dikerjakan", resolved: "Selesai", closed: "Ditutup" };
+        await admin.from("notifications").insert({
+          user_id: ten.user_id,
+          type: "ticket_update",
+          title: "Status komplain diperbarui",
+          body: `${ticket.subject} → ${labels[status]}`,
+          link: "/portal/komplain"
+        });
+      }
     }
   } catch {
     // ignore

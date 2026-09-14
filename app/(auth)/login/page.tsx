@@ -51,8 +51,8 @@ export default function LoginPage() {
       return;
     }
 
-    // Refresh route agar middleware mendeteksi sesi baru
-    router.push("/dashboard");
+    // Arahkan langsung sesuai peran agar tenant tidak melewati dashboard lebih dulu.
+    router.push(await homeForRole());
     router.refresh();
   }
 
