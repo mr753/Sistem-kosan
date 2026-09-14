@@ -49,9 +49,9 @@ export default function RegisterPage() {
         // Jika perlu konfirmasi email
         setInfo("Pendaftaran berhasil! Silakan cek email Anda untuk verifikasi, lalu masuk.");
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Registration error:", err);
-      setError(err.message || "Terjadi kesalahan saat mendaftar. Silakan coba lagi.");
+      setError(err instanceof Error ? err.message : "Terjadi kesalahan saat mendaftar. Silakan coba lagi.");
     } finally {
       setLoading(false);
     }
