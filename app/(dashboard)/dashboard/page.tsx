@@ -47,6 +47,15 @@ export default async function DashboardPage() {
     );
   }
 
+  // Tampilkan state kosong jika tidak ada data yang relevan
+  if (data.summary.totalRooms === 0 && data.alerts.length === 0) {
+    return (
+      <div className="flex min-h-[400px] flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-200 p-8 text-center">
+        <p className="text-muted-foreground">Koneksi ke database berhasil, namun belum ada data untuk properti yang dipilih.</p>
+      </div>
+    );
+  }
+
   const firstName = profile.full_name?.split(" ")[0] ?? "Pemilik";
   const today = new Date().toLocaleDateString("id-ID", {
     weekday: "long", day: "numeric", month: "long", year: "numeric"
