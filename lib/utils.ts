@@ -34,11 +34,6 @@ export function formatDateTime(iso: string | null | undefined) {
   });
 }
 
-/** Nama bulan pendek, mis. "Sep" */
-export function monthShort(date: Date) {
-  return date.toLocaleDateString("id-ID", { month: "short" });
-}
-
 export function getInitials(name?: string | null) {
   if (!name) return "?";
   return name

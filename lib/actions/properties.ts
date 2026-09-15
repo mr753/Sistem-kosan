@@ -342,21 +342,3 @@ export async function deletePropertyAction(id: string): Promise<ActionResult> {
   revalidatePath("/rooms");
   return { ok: true };
 }
-
-/**
- * Kompatibilitas fungsi create/update/delete lama jika ada kode lain yang memanggil
- */
-export async function createProperty(data: Omit<Property, "id" | "owner_id" | "created_at" | "updated_at">) {
-  const res = await createPropertyAction(data);
-  if (!res.ok) throw new Error(res.error);
-}
-
-export async function updateProperty(id: string, data: Partial<Omit<Property, "id" | "owner_id" | "created_at" | "updated_at">>) {
-  const res = await updatePropertyAction(id, data as PropertyInput);
-  if (!res.ok) throw new Error(res.error);
-}
-
-export async function deleteProperty(id: string) {
-  const res = await deletePropertyAction(id);
-  if (!res.ok) throw new Error(res.error);
-}
