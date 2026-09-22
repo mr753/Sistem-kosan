@@ -9,6 +9,7 @@ import { formatDate, formatIDR } from "@/lib/utils";
 import {
   approveInvoiceAction,
   generateInvoicesAction,
+  openWhatsAppReminderAction,
   rejectInvoiceAction,
   revertInvoiceAction
 } from "@/app/(dashboard)/invoices/actions";
@@ -127,6 +128,14 @@ export default async function InvoicesPage() {
                         </TableCell>
                         <TableCell>
                           <div className="flex flex-wrap justify-end gap-1.5">
+                            {(inv.status === "unpaid" || inv.status === "pending_confirmation") && (
+                              <ActionButton
+                                label="Buka WhatsApp"
+                                variant="outline"
+                                size="sm"
+                                run={() => openWhatsAppReminderAction(inv.id)}
+                              />
+                            )}
                             {inv.status === "pending_confirmation" && (
                               <>
                                 <ActionButton label="Terima" variant="success" size="sm" run={() => approveInvoiceAction(inv.id)} />
@@ -137,7 +146,14 @@ export default async function InvoicesPage() {
                               <ActionButton label="Tandai Lunas" variant="success" size="sm" run={() => approveInvoiceAction(inv.id)} />
                             )}
                             {inv.status === "paid" && (
-                              <ActionButton label="Batalkan Lunas" variant="ghost" size="sm" className="text-muted-foreground" run={() => revertInvoiceAction(inv.id)} />
+                              <ActionButton
+                                label="Batalkan Lunas"
+                                variant="ghost"
+                                size="sm"
+                                className="text-muted-foreground"
+                                confirm={`Batalkan status Lunas untuk tagihan ${inv.period_label}? Transaksi pemasukan otomatis yang menyertai tagihan ini juga akan dihapus.`}
+                                run={() => revertInvoiceAction(inv.id)}
+                              />
                             )}
                           </div>
                         </TableCell>

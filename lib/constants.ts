@@ -125,6 +125,7 @@ export const FACILITY_OPTIONS = [
 
 export const STORAGE_BUCKETS = {
   propertyImages: "property-images",
+  tenantDocs: "tenant-docs",
   paymentProofs: "payment-proofs",
   ticketPhotos: "ticket-photos"
 } as const;

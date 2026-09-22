@@ -8,6 +8,11 @@ import { formatDate, formatIDR } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { PortalDocumentViewButton } from "@/components/portal/portal-document-view-button";
+import {
+  getMyContractDocumentSignedUrlAction,
+  getMyIdCardSignedUrlAction
+} from "@/app/portal/dokumen/actions";
 
 export const metadata = { title: "Beranda" };
 
@@ -146,11 +151,51 @@ export default async function PortalHomePage() {
                     Kirim Komplain
                   </Link>
                 </div>
+
+                {/* Dokumen kontrak (view-only, signed URL sementara) */}
+                <PortalDocumentViewButton
+                  label="Lihat Dokumen Kontrak"
+                  hasDocument={!!c.contract_doc_url}
+                  onView={async () => {
+                    const res = await getMyContractDocumentSignedUrlAction(c.id);
+                    return {
+                      ok: res.ok,
+                      url: res.ok ? res.data?.url ?? null : null,
+                      error: res.ok ? undefined : res.error
+                    };
+                  }}
+                />
               </CardContent>
             </Card>
           );
         })
       )}
+
+      {/* KTP (view-only): tersimpan di bucket private tenant-docs, hanya bisa
+          dibuka lewat signed URL sementara yang diotorisasi server. */}
+      <Card>
+        <CardContent className="flex flex-wrap items-center justify-between gap-3 pt-5">
+          <div>
+            <p className="text-sm font-semibold">Dokumen KTP</p>
+            <p className="text-xs text-muted-foreground">
+              Identitas Anda tersimpan privat — hanya Anda dan pengelola kos yang dapat melihatnya.
+              Pembaruan KTP dilakukan oleh pengelola kos.
+            </p>
+          </div>
+          <PortalDocumentViewButton
+            label="Lihat KTP"
+            hasDocument={!!data.tenant.id_card_url}
+            onView={async () => {
+              const res = await getMyIdCardSignedUrlAction();
+              return {
+                ok: res.ok,
+                url: res.ok ? res.data?.url ?? null : null,
+                error: res.ok ? undefined : res.error
+              };
+            }}
+          />
+        </CardContent>
+      </Card>
     </div>
   );
 }

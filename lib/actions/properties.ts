@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { logActivity } from "@/lib/activity";
 import type { Property, PropertyWithStats, Room } from "@/lib/types";
 
 export type ActionResult<T = undefined> =
@@ -209,6 +210,18 @@ export async function createPropertyAction(input: PropertyInput): Promise<Action
     return { ok: false, error: `Gagal menyimpan properti: ${error.message}` };
   }
 
+  await logActivity(
+    {
+      action: "create",
+      entityType: "property",
+      entityId: data.id,
+      propertyId: data.id,
+      description: `Membuat properti: ${name}`,
+      metadata: { name }
+    },
+    auth.supabase
+  );
+
   revalidatePath("/properties");
   revalidatePath("/dashboard");
   revalidatePath("/rooms");
@@ -249,6 +262,18 @@ export async function updatePropertyAction(
     return { ok: false, error: `Gagal memperbarui properti: ${error.message}` };
   }
 
+  await logActivity(
+    {
+      action: "update",
+      entityType: "property",
+      entityId: id,
+      propertyId: id,
+      description: `Memperbarui properti: ${name}`,
+      metadata: { name }
+    },
+    auth.supabase
+  );
+
   revalidatePath("/properties");
   revalidatePath(`/properties/${id}`);
   revalidatePath("/dashboard");
@@ -279,6 +304,18 @@ export async function togglePropertyStatusAction(
   if (error) {
     return { ok: false, error: `Gagal mengubah status properti: ${error.message}` };
   }
+
+  await logActivity(
+    {
+      action: "update",
+      entityType: "property",
+      entityId: id,
+      propertyId: id,
+      description: `Mengubah status properti menjadi ${isActive ? "aktif" : "nonaktif"}`,
+      metadata: { is_active: isActive }
+    },
+    auth.supabase
+  );
 
   revalidatePath("/properties");
   revalidatePath(`/properties/${id}`);
@@ -327,7 +364,25 @@ export async function deletePropertyAction(id: string): Promise<ActionResult> {
     };
   }
 
-  // 3. Eksekusi hapus properti
+  // 3. DELETE SAFETY (keuangan): transaksi menempel langsung ke property_id dan
+  //    akan ter-CASCADE terhapus — jangan biarkan riwayat keuangan hilang diam-diam.
+  const { count: txCount, error: txCountError } = await auth.supabase
+    .from("transactions")
+    .select("id", { count: "exact", head: true })
+    .eq("property_id", id);
+
+  if (txCountError) {
+    return { ok: false, error: `Gagal memeriksa transaksi: ${txCountError.message}` };
+  }
+
+  if (txCount && txCount > 0) {
+    return {
+      ok: false,
+      error: `Properti tidak dapat dihapus karena masih memiliki ${txCount} catatan transaksi keuangan. Hapus transaksi terkait terlebih dahulu di modul Keuangan.`
+    };
+  }
+
+  // 4. Eksekusi hapus properti
   const { error: deleteError } = await auth.supabase
     .from("properties")
     .delete()
@@ -336,6 +391,18 @@ export async function deletePropertyAction(id: string): Promise<ActionResult> {
   if (deleteError) {
     return { ok: false, error: `Gagal menghapus properti: ${deleteError.message}` };
   }
+
+  await logActivity(
+    {
+      action: "delete",
+      entityType: "property",
+      entityId: id,
+      propertyId: id,
+      description: `Menghapus properti: ${prop.name}`,
+      metadata: { name: prop.name }
+    },
+    auth.supabase
+  );
 
   revalidatePath("/properties");
   revalidatePath("/dashboard");

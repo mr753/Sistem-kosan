@@ -65,12 +65,19 @@ export interface Tenant {
   phone: string | null;
   email: string | null;
   id_card_url: string | null;
+  id_card_url_signed?: string | null;
   emergency_contact_name: string | null;
   emergency_contact_phone: string | null;
   address: string | null;
   notes: string | null;
   created_at: string;
   updated_at: string;
+}
+
+/** Tenant + ringkasan kontrak utk halaman dashboard Penyewa. */
+export interface TenantWithStats extends Tenant {
+  contract_count: number;
+  active_contract_count: number;
 }
 
 export interface Contract {
@@ -86,9 +93,18 @@ export interface Contract {
   deposit_amount: number;
   status: ContractStatus;
   contract_doc_url: string | null;
+  contract_doc_url_signed?: string | null;
   notes: string | null;
   created_at: string;
   updated_at: string;
+}
+
+/** Kontrak + relasi ringkas utk halaman dashboard Kontrak. */
+export interface ContractWithDetails extends Contract {
+  tenants?: Pick<Tenant, "id" | "full_name"> | null;
+  rooms?: Pick<Room, "id" | "room_number"> | null;
+  properties?: Pick<Property, "id" | "name"> | null;
+  invoice_count?: number;
 }
 
 export interface Invoice {
@@ -130,6 +146,12 @@ export interface Transaction {
   receipt_url: string | null;
   created_by: string | null;
   created_at: string;
+}
+
+/** Transaksi + relasi ringkas utk halaman dashboard Keuangan. */
+export interface TransactionWithDetails extends Transaction {
+  properties?: Pick<Property, "id" | "name"> | null;
+  invoices?: Pick<Invoice, "id" | "period_label" | "status"> | null;
 }
 
 export interface Ticket {

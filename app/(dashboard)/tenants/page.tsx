@@ -1,20 +1,14 @@
-import { Users } from "lucide-react";
-import { ModulePlaceholder } from "@/components/module-placeholder";
+import { requireUser } from "@/lib/auth";
+import { getTenantsWithStats } from "@/app/(dashboard)/tenants/actions";
+import { TenantsClient } from "@/components/tenants/tenants-client";
 
 export const metadata = { title: "Penyewa" };
 
-export default function TenantsPage() {
-  return (
-    <ModulePlaceholder
-      title="Penyewa"
-      description="Database profil penyewa lengkap."
-      icon={Users}
-      planned={[
-        "Profil: nama, No. HP, email, alamat, kontak darurat",
-        "Upload foto KTP/ID ke Supabase Storage (bucket tenant-docs, private)",
-        "Hubungkan akun login penyewa (user_id) ke profil",
-        "Skema lengkap: tabel tenants + kebijakan RLS pemilik/penyewa"
-      ]}
-    />
-  );
+export default async function TenantsPage() {
+  // Wajib login sebelum mengakses halaman penyewa (pola properties/page.tsx)
+  await requireUser();
+
+  const tenants = await getTenantsWithStats();
+
+  return <TenantsClient initialTenants={tenants} />;
 }

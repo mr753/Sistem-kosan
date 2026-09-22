@@ -15,19 +15,23 @@ export interface ActionResultMsg {
   ok: boolean;
   message?: string;
   error?: string;
+  url?: string;
 }
 
 interface ActionButtonProps extends Omit<ButtonProps, "onClick" | "children"> {
   label: string;
   run: () => Promise<ActionResultMsg>;
+  /** Pesan konfirmasi opsional utk aksi destruktif (mis. Batalkan Lunas). */
+  confirm?: string;
 }
 
-export function ActionButton({ label, run, ...buttonProps }: ActionButtonProps) {
+export function ActionButton({ label, run, confirm, ...buttonProps }: ActionButtonProps) {
   const router = useRouter();
   const [pending, startTransition] = React.useTransition();
-  const [msg, setMsg] = React.useState<{ text: string; isError: boolean } | null>(null);
+  const [msg, setMsg] = React.useState<{ text: string; isError: boolean; url?: string } | null>(null);
 
   function handleClick() {
+    if (confirm && !window.confirm(confirm)) return;
     setMsg(null);
     startTransition(async () => {
       const res = await run();
@@ -35,8 +39,13 @@ export function ActionButton({ label, run, ...buttonProps }: ActionButtonProps) 
         setMsg({ text: res.error ?? "Gagal. Coba lagi.", isError: true });
         return;
       }
-      if (res.message) setMsg({ text: res.message, isError: false });
-      router.refresh();
+      if (res.url) {
+        window.open(res.url, "_blank", "noopener,noreferrer");
+      }
+      if (res.message) setMsg({ text: res.message, isError: false, url: res.url });
+      if (!res.url) {
+        router.refresh();
+      }
     });
   }
 
@@ -47,7 +56,20 @@ export function ActionButton({ label, run, ...buttonProps }: ActionButtonProps) 
         {label}
       </Button>
       {msg && (
-        <span className={msg.isError ? "text-xs text-red-600" : "text-xs text-emerald-600"}>{msg.text}</span>
+        <span className={msg.isError ? "text-xs text-red-600" : "text-xs text-emerald-600"}>
+          {msg.url ? (
+            <a
+              href={msg.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline hover:text-emerald-700"
+            >
+              {msg.text}
+            </a>
+          ) : (
+            msg.text
+          )}
+        </span>
       )}
     </span>
   );

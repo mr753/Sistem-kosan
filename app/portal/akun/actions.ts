@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { logActivity } from "@/lib/activity";
 
 export async function updateAccountAction(formData: FormData) {
   const supabase = await createClient();
@@ -19,6 +20,17 @@ export async function updateAccountAction(formData: FormData) {
     .eq("id", user.id);
 
   if (error) throw new Error(`Gagal menyimpan profil: ${error.message}`);
+
+  await logActivity(
+    {
+      action: "update",
+      entityType: "profile",
+      entityId: user.id,
+      description: "Memperbarui profil akun portal"
+    },
+    supabase
+  );
+
   revalidatePath("/portal/akun");
   revalidatePath("/portal");
 }

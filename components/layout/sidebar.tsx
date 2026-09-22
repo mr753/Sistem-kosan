@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  Building2, DoorOpen, FileSignature, Handshake, LayoutDashboard,
+  BarChart3, Building2, DoorOpen, FileSignature, Handshake, LayoutDashboard,
   LogOut, Menu, ReceiptText, Settings, Users, Wallet, Wrench, X, Home
 } from "lucide-react";
 import { cn, getInitials } from "@/lib/utils";
@@ -25,8 +25,13 @@ const OWNER_NAV: NavItem[] = [
   { href: "/contracts", label: "Kontrak", icon: FileSignature },
   { href: "/invoices", label: "Tagihan", icon: ReceiptText },
   { href: "/transactions", label: "Keuangan", icon: Wallet },
+  { href: "/reports", label: "Laporan", icon: BarChart3 },
   { href: "/tickets", label: "Komplain", icon: Wrench },
   { href: "/agents", label: "Agen Sewa", icon: Handshake }
+];
+
+const ADMIN_NAV: NavItem[] = [
+  { href: "/users", label: "Manajemen User", icon: Users }
 ];
 
 const COMMON_NAV: NavItem[] = [{ href: "/settings", label: "Pengaturan", icon: Settings }];
@@ -41,7 +46,15 @@ export function SidebarContent({
   email: string | null;
 }) {
   const pathname = usePathname();
-  const items = role === "tenant" ? [] : [...OWNER_NAV, ...COMMON_NAV];
+
+  let items: NavItem[] = [];
+  if (role === "tenant") {
+    items = [];
+  } else if (role === "super_admin") {
+    items = [...OWNER_NAV, ...ADMIN_NAV, ...COMMON_NAV];
+  } else {
+    items = [...OWNER_NAV, ...COMMON_NAV];
+  }
 
   const isActive = (href: string) =>
     href === "/dashboard" ? pathname === "/dashboard" : pathname.startsWith(href);

@@ -16,7 +16,8 @@ export interface UploadResult {
 const EXT_BY_TYPE: Record<string, string> = {
   "image/jpeg": "jpg",
   "image/png": "png",
-  "image/webp": "webp"
+  "image/webp": "webp",
+  "application/pdf": "pdf"
 };
 
 export async function uploadUserFile(
@@ -26,8 +27,12 @@ export async function uploadUserFile(
   opts: { maxMb?: number } = {}
 ): Promise<UploadResult> {
   const maxMb = opts.maxMb ?? 1.5;
-  if (!file.type.startsWith("image/")) {
-    return { path: null, error: "File harus berupa gambar (JPG/PNG/WEBP)." };
+  const allowed = ["image/jpeg", "image/png", "image/webp", "application/pdf"];
+  if (!allowed.includes(file.type)) {
+    return { path: null, error: "File harus berupa gambar (JPG/PNG/WEBP) atau PDF." };
+  }
+  if (!file.size || file.size <= 0) {
+    return { path: null, error: "File kosong tidak dapat diunggah." };
   }
   if (file.size > maxMb * 1024 * 1024) {
     return { path: null, error: `Ukuran file maksimal ${maxMb} MB.` };
@@ -39,7 +44,7 @@ export async function uploadUserFile(
   } = await supabase.auth.getUser();
   if (!user) return { path: null, error: "Sesi berakhir. Silakan masuk lagi." };
 
-  const ext = EXT_BY_TYPE[file.type] ?? "jpg";
+  const ext = EXT_BY_TYPE[file.type] ?? "bin";
   const path = `${user.id}/${prefix}-${Date.now()}.${ext}`;
   const { error } = await supabase.storage
     .from(bucket)

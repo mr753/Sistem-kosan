@@ -1,20 +1,27 @@
-import { Wallet } from "lucide-react";
-import { ModulePlaceholder } from "@/components/module-placeholder";
+import { requireUser } from "@/lib/auth";
+import {
+  getTransactionsWithDetails,
+  getTransactionFormData
+} from "@/app/(dashboard)/transactions/actions";
+import { TransactionsClient } from "@/components/transactions/transactions-client";
 
 export const metadata = { title: "Keuangan" };
 
-export default function TransactionsPage() {
+export default async function TransactionsPage() {
+  // Wajib login sebelum mengakses halaman keuangan (pola properties/page.tsx)
+  await requireUser();
+
+  // Semua transaksi dalam scope RLS diambil server-side; ringkasan (pemasukan,
+  // pengeluaran, saldo, jumlah) dihitung dari data yang sama agar konsisten dgn filter.
+  const [transactions, formData] = await Promise.all([
+    getTransactionsWithDetails(),
+    getTransactionFormData()
+  ]);
+
   return (
-    <ModulePlaceholder
-      title="Keuangan"
-      description="Catatan uang masuk & keluar per properti."
-      icon={Wallet}
-      planned={[
-        "Uang masuk: sewa, listrik/air tambahan, deposit",
-        "Uang keluar: perbaikan, gaji penjaga kos, token listrik utama",
-        "Daftar & filter per bulan/properti/kategori",
-        "Grafik dashboard sudah membaca data dari tabel transactions"
-      ]}
+    <TransactionsClient
+      initialTransactions={transactions}
+      formData={formData}
     />
   );
 }

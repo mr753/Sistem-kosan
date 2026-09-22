@@ -51,7 +51,12 @@ export async function GET(request: Request) {
   const m = now.getMonth(); // 0-based
   const periodStart = new Date(y, m, 1).toISOString().slice(0, 10);
   const periodEnd = new Date(y, m, lastDayOfMonth(y, m + 1), 23, 59, 59).toISOString().slice(0, 10);
-  const label = now.toLocaleDateString("id-ID", { month: "long", year: "numeric" });
+  // Label disamakan dgn generateInvoicesAction ("September 2026"); toLocaleDateString
+  // bisa memakai non-breaking space (U+00A0) antara bulan & tahun — dinormalisasi agar
+  // pencocokan periode antara cron dan action manual konsisten.
+  const label = now
+    .toLocaleDateString("id-ID", { month: "long", year: "numeric" })
+    .replace(/\u00a0/g, " ");
 
   // Invoice periode ini yang sudah pernah dibuat (contract_id) — utk anti duplikat.
   // Catatan: PostgREST tidak menerima subquery SQL di dalam filter, jadi
